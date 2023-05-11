@@ -113,7 +113,6 @@
 			if (!bigFocus && e.buttons === leftButton) hueFocus = true;
 		}}
 		on:touchstart={(e) => {
-			console.log('nice');
 			if (!bigFocus) hueFocus = true;
 		}}
 		bind:this={hueElement}

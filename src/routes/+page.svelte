@@ -14,7 +14,7 @@
 	)})`;
 </script>
 
-<div class="h-screen w-full relative" style:background-image={gradient}>
+<div class="w-full relative" style:background-image={gradient} style:height="100svh">
 	<div class="w-full absolute bottom-0">
 		<div class="mx-auto flex flex-col w-min">
 			<div class="bg-slate-900" style:display={editorHidden ? 'none' : ''}>

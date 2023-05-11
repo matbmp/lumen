@@ -88,6 +88,7 @@
             background-image: linear-gradient(transparent, black),
 			    linear-gradient(to right, white, transparent);
         `}
+		style:touch-action='none'
 		on:mousedown={(e) => {
 			if (!hueFocus && e.buttons === leftButton) bigFocus = true;
 		}}
@@ -108,7 +109,7 @@
 	</div>
 
 	<div
-		class="relative w-full h-4 rounded-xl window-hue my-2 border border-gray"
+		class="relative w-full h-4 rounded-xl my-2 border border-gray window-hue"
 		on:mousedown={(e) => {
 			if (!bigFocus && e.buttons === leftButton) hueFocus = true;
 		}}
@@ -146,6 +147,7 @@
 
 <style>
 	.window-hue {
+		touch-action: none;
 		background-image: linear-gradient(
 			to right,
 			#ff0000,

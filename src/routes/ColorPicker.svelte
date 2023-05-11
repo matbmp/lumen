@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-    import  convert  from 'color-convert';
+	import convert from 'color-convert';
 
 	export let hex: string = '#ff0000';
 	const leftButton = 1;
@@ -11,8 +11,6 @@
 	let bigElement: HTMLElement;
 	let hueElement: HTMLElement;
 
-    
-
 	let hsl = convert.hex.hsl(hex);
 	let rgb = convert.hex.rgb(hex);
 	$: rgb = convert.hex.rgb(hex);
@@ -21,15 +19,8 @@
 		return Math.max(Math.min(value, max), min);
 	}
 
-	function to_hex(x: number) {
-		const hex = Math.round(x * 255).toString(16);
-		return hex.length === 1 ? '0' + hex : hex;
-	}
-
 	function mouseMoved(event: MouseEvent) {
-        
 		if (event.buttons === leftButton) {
-            console.log(hsl)
 			if (bigFocus) {
 				let rect = bigElement.getBoundingClientRect();
 				let dx = event.clientX - rect.left;
@@ -37,7 +28,7 @@
 				const px = clamp(0, dx / bigWdith, 1);
 				const py = clamp(0, dy / bigHeight, 1);
 
-				hsl[1] = 100*px;
+				hsl[1] = 100 * px;
 				hsl[2] = 100 * (1 - py / (1 + px) - px / 2);
 			}
 			if (hueFocus) {
@@ -52,8 +43,38 @@
 		}
 	}
 
+	function touchMoved(event: TouchEvent) {
+		let touch = event.touches.item(0);
+		if (touch != undefined) {
+			if (bigFocus) {
+				let rect = bigElement.getBoundingClientRect();
+
+				let dx = touch.clientX - rect.left;
+				let dy = touch.clientY - rect.top;
+				const px = clamp(0, dx / bigWdith, 1);
+				const py = clamp(0, dy / bigHeight, 1);
+
+				hsl[1] = 100 * px;
+				hsl[2] = 100 * (1 - py / (1 + px) - px / 2);
+			}
+			if (hueFocus) {
+				let rect = hueElement.getBoundingClientRect();
+				let dx = touch.clientX - rect.left;
+				const px = clamp(0, dx / bigWdith, 1);
+				hsl[0] = px * 360;
+			}
+		}
+		hex = `#${convert.hsl.hex(hsl)}`;
+	}
+
+	function touchEnded(e: TouchEvent) {
+		bigFocus = hueFocus = false;
+	}
+
 	onMount(() => {
 		document.addEventListener('mousemove', mouseMoved);
+		document.addEventListener('touchmove', touchMoved);
+		document.addEventListener('touchend', touchEnded);
 	});
 </script>
 
@@ -70,14 +91,19 @@
 		on:mousedown={(e) => {
 			if (!hueFocus && e.buttons === leftButton) bigFocus = true;
 		}}
+		on:touchstart={(e) => {
+			if (!hueFocus) bigFocus = true;
+		}}
 		bind:clientWidth={bigWdith}
 		bind:clientHeight={bigHeight}
 		bind:this={bigElement}
 	>
 		<div
 			class="absolute h-6 w-6 rounded-2xl border-4 border-white pointer-events-none"
-			style:top={`calc(${(1 + hsl[1]/100) * (1 - hsl[2]/100 - hsl[1] / 200) * bigHeight}px - 0.75rem)`}
-			style:left={`calc(${hsl[1]/100 * bigWdith}px - 0.75rem)`}
+			style:top={`calc(${
+				(1 + hsl[1] / 100) * (1 - hsl[2] / 100 - hsl[1] / 200) * bigHeight
+			}px - 0.75rem)`}
+			style:left={`calc(${(hsl[1] / 100) * bigWdith}px - 0.75rem)`}
 		/>
 	</div>
 
@@ -85,6 +111,10 @@
 		class="relative w-full h-4 rounded-xl window-hue my-2 border border-gray"
 		on:mousedown={(e) => {
 			if (!bigFocus && e.buttons === leftButton) hueFocus = true;
+		}}
+		on:touchstart={(e) => {
+			console.log('nice');
+			if (!bigFocus) hueFocus = true;
 		}}
 		bind:this={hueElement}
 	>
@@ -100,14 +130,14 @@
 			{hex}
 		</div>
 		<div class="border-2 border-slate-300 rounded flex items-center justify-center">
-            {rgb[0]}
-            {rgb[1]}
-            {rgb[2]}
-        </div>
+			{rgb[0]}
+			{rgb[1]}
+			{rgb[2]}
+		</div>
 		<div class="border-2 border-slate-300 rounded flex items-center justify-center">
-			{(hsl[0]).toFixed(0)}
-			{(hsl[1]).toFixed(0)}
-			{(hsl[2]).toFixed(0)}
+			{hsl[0].toFixed(0)}
+			{hsl[1].toFixed(0)}
+			{hsl[2].toFixed(0)}
 		</div>
 		<div class="flex justify-center">HEX</div>
 		<div class="flex justify-center">RGB</div>

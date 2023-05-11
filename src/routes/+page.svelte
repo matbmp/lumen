@@ -66,7 +66,7 @@
 <div class="relative h-100">
 	<Toast position="bottom-right" bind:open={toastOpen}>
 		<div class="text-slate-900">
-			Copied: <span class='text-amber-800'>{gradient}</span> to clipboard
+			Copied: <span class="text-amber-800">{gradient}</span> to clipboard
 		</div>
 	</Toast>
 </div>

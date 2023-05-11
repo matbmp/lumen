@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { converter, formatHex } from 'culori';
-	let rgbConverter = converter('rgb');
-	let hslConverter = converter('hsl');
+    import  convert  from 'color-convert';
 
 	export let hex: string = '#ff0000';
 	const leftButton = 1;
@@ -13,24 +11,25 @@
 	let bigElement: HTMLElement;
 	let hueElement: HTMLElement;
 
-	let hsl = hslConverter(hex) ?? { mode: 'hsl', h: 1, s: 1, l: 0.5 };
-	let h: number;
-	let rgb = rgbConverter(hsl);
+    
 
-	let sampleStyle: string;
-	let bigStyle: string;
-	let bigSliderStyle: string;
-	let hueSliderStyle: string;
-
-	$: rgb = rgbConverter(hsl);
-	$: hex = formatHex(rgb);
+	let hsl = convert.hex.hsl(hex);
+	let rgb = convert.hex.rgb(hex);
+	$: rgb = convert.hex.rgb(hex);
 
 	function clamp(min: number, value: number, max: number) {
 		return Math.max(Math.min(value, max), min);
 	}
 
+	function to_hex(x: number) {
+		const hex = Math.round(x * 255).toString(16);
+		return hex.length === 1 ? '0' + hex : hex;
+	}
+
 	function mouseMoved(event: MouseEvent) {
+        
 		if (event.buttons === leftButton) {
+            console.log(hsl)
 			if (bigFocus) {
 				let rect = bigElement.getBoundingClientRect();
 				let dx = event.clientX - rect.left;
@@ -38,15 +37,16 @@
 				const px = clamp(0, dx / bigWdith, 1);
 				const py = clamp(0, dy / bigHeight, 1);
 
-				hsl.s = px;
-				hsl.l = 1 - py / (1 + px) - px / 2;
+				hsl[1] = 100*px;
+				hsl[2] = 100 * (1 - py / (1 + px) - px / 2);
 			}
 			if (hueFocus) {
 				let rect = hueElement.getBoundingClientRect();
 				let dx = event.clientX - rect.left;
 				const px = clamp(0, dx / bigWdith, 1);
-				hsl.h = px * 360;
+				hsl[0] = px * 360;
 			}
+			hex = `#${convert.hsl.hex(hsl)}`;
 		} else {
 			bigFocus = hueFocus = false;
 		}
@@ -63,7 +63,7 @@
 	<div
 		class="relative h-40 window-saturation border border-gray rounded shadow window-big"
 		style={`
-            background: hsl(${hsl.h} 100% 50%);
+            background: hsl(${hsl[0]} 100% 50%);
             background-image: linear-gradient(transparent, black),
 			    linear-gradient(to right, white, transparent);
         `}
@@ -76,8 +76,8 @@
 	>
 		<div
 			class="absolute h-6 w-6 rounded-2xl border-4 border-white pointer-events-none"
-			style:top={`calc(${(1 + hsl.s) * (1 - hsl.l - hsl.s / 2) * bigHeight}px - 0.75rem)`}
-			style:left={`calc(${hsl.s * bigWdith}px - 0.75rem)`}
+			style:top={`calc(${(1 + hsl[1]/100) * (1 - hsl[2]/100 - hsl[1] / 200) * bigHeight}px - 0.75rem)`}
+			style:left={`calc(${hsl[1]/100 * bigWdith}px - 0.75rem)`}
 		/>
 	</div>
 
@@ -90,8 +90,8 @@
 	>
 		<div
 			class="absolute h-6 w-6 -top-1 rounded-2xl border-4 border-white pointer-events-none"
-			style:left={`calc(${((hsl.h || 0) / 360) * bigWdith}px - 0.75rem)`}
-			style:background={`hsl(${hsl.h} 100% 50%)`}
+			style:left={`calc(${((hsl[0] || 0) / 360) * bigWdith}px - 0.75rem)`}
+			style:background={`hsl(${hsl[0]} 100% 50%)`}
 		/>
 	</div>
 
@@ -100,14 +100,14 @@
 			{hex}
 		</div>
 		<div class="border-2 border-slate-300 rounded flex items-center justify-center">
-			{(rgb.r * 255).toFixed(0)}
-			{(rgb.g * 255).toFixed(0)}
-			{(rgb.b * 255).toFixed(0)}
-		</div>
+            {rgb[0]}
+            {rgb[1]}
+            {rgb[2]}
+        </div>
 		<div class="border-2 border-slate-300 rounded flex items-center justify-center">
-			{(hsl.h || 0).toFixed(0)}
-			{(hsl.s * 100).toFixed(0)}
-			{(hsl.l * 100).toFixed(0)}
+			{(hsl[0]).toFixed(0)}
+			{(hsl[1]).toFixed(0)}
+			{(hsl[2]).toFixed(0)}
 		</div>
 		<div class="flex justify-center">HEX</div>
 		<div class="flex justify-center">RGB</div>
